@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DATAX脚本数据源连接修改</title>
+    <link rel="stylesheet" href="pure/pure-min.css">
+    <script src="js/jquery-3.5.1.min.js"></script>
+    <style>
+        .button-secondary {
+            color: white;
+            border-radius: 4px;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+            background: rgb(66, 184, 221);
+        }
+    </style>
+</head>
+<body>
+<div class="pure-g">
+    <div class="pure-u-2-24"></div>
+    <div class="pure-u-20-24">
+        <form class="pure-form">
+            <fieldset>
+                <legend>datax-web数据源</legend>
+                <input type="text" name="dbHost" placeholder="数据源地址" value="10.100.10.115">
+                <input type="text" name="dbPort" placeholder="数据源端口" value="3306">
+                <input type="text" name="dbName" placeholder="数据库名" value="datax_web">
+                <input type="text" name="dbUsername" placeholder="数据源用户名" value="datax_web">
+                <input type="password" name="dbPassword" placeholder="数据源密码" value="datax_web">
+                <input type="text" name="jobDesc" placeholder="任务名称">
+                <input type="text" name="projectName" placeholder="所属项目">
+                <button type="button" id="searchJobs" class="pure-button pure-button-primary">查询任务</button>
+            </fieldset>
+        </form>
+        <fieldset>
+            <legend>数据源修改</legend>
+            <p>
+                <button type="button" id="selectAll" class="pure-button button-secondary">全选/取消全选</button>
+                <button type="button" id="updateJobs" class="pure-button button-secondary">导出任务</button>
+            </p>
+            <table class="pure-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>任务ID</th>
+                    <th>任务名称</th>
+                    <th>所属项目</th>
+                    <th>cron</th>
+                    <th>路由策略</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </fieldset>
+    </div>
+    <div class="pure-u-2-24"></div>
+    <div>
+
+    </div>
+</div>
+
+</body>
+<script type="text/javascript">
+    function getParams(){
+        let param = {};
+        param.dbHost = $("input[name='dbHost']").val();
+        param.dbPort = $("input[name='dbPort']").val();
+        param.dbName = $("input[name='dbName']").val();
+        param.dbUsername = $("input[name='dbUsername']").val();
+        param.dbPassword = $("input[name='dbPassword']").val();
+        param.jobDesc = $("input[name='jobDesc']").val();
+        param.projectName = $("input[name='projectName']").val();
+        return param;
+    }
+
+    function download (uuid) {
+        var html = "<form action='download' method='post'><input type='text' name='uuid' value='" + uuid + "'/></form>";
+        $(html).appendTo('body').submit().remove();
+    };
+
+    $("#searchJobs").click(function () {
+
+        $("tbody").empty();
+        isChecked = false;
+        $.ajax({
+            type: "post",
+            url: "./listJobs",
+            contentType: "application/json;charset=UTF-8",
+            data: JSON.stringify(getParams()),
+            success: function (result) {
+                let trStr = "<tr><td><input name='jobId' type='checkbox' value='$(id)'/></td><td>$(id)</td><td>$(name)</td><td>$(project)</td><td>$(cron)</td><td>$(route)</td></tr>";
+                let trOddStr = "<tr class='pure-table-odd'><td><input name='jobId' type='checkbox' value='$(id)'/></td><td>$(id)</td><td>$(name)</td><td>$(project)</td><td>$(cron)</td><td>$(route)</td></tr>";
+                if (result.data && result.data.length > 0) {
+                    $(result.data).each(function (index, element) {
+                        if (index % 2 == 0) {
+                            $("tbody").append(trStr.replace(/\$\(id\)/g, element.id).replace("$(name)", element.job_desc).replace("$(project)", element.project_name).replace("$(cron)", element.job_cron).replace("$(route)", element.executor_route_strategy));
+                        } else {
+                            $("tbody").append(trOddStr.replace(/\$\(id\)/g, element.id).replace("$(name)", element.job_desc).replace("$(project)", element.project_name).replace("$(cron)", element.job_cron).replace("$(route)", element.executor_route_strategy));
+                        }
+                    });
+                } else {
+                    $("tbody").append("<tr><td colspan='6' style='text-align: center;color: #999999'>无</td></tr>");
+                }
+            }
+        });
+    });
+
+    let isChecked = false;
+    $("#selectAll").click(function () {
+        if (isChecked) {
+            $("input[name='jobId']").removeAttr("checked");
+            isChecked = false;
+        } else {
+            $("input[name='jobId']").attr("checked", 'true');
+            isChecked = true;
+        }
+    });
+
+    $("#updateJobs").click(function () {
+        let ids = [];
+        $("input[name='jobId']:checked").each(function (index, element) {
+            ids.push($(element).val());
+        });
+        let param = getParams();
+        param.ids = ids;
+        $.ajax({
+            type: "post",
+            url: "./exportSql",
+            contentType: "application/json;charset=UTF-8",
+            data: JSON.stringify(param),
+            success: function (result) {
+                download(result);
+            }
+        });
+    });
+</script>
+</html>
