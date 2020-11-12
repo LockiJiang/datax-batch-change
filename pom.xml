@@ -8,7 +8,7 @@
         <version>2.3.5.RELEASE</version>
     </parent>
     <groupId>com.locki</groupId>
-    <artifactId>datax-batch-change</artifactId>
+    <artifactId>datax-web-export</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>datax-batch-change</name>
     <description>Demo project for Spring Boot</description>
