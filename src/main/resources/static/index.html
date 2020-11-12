@@ -41,6 +41,7 @@
             <table class="pure-table">
                 <thead>
                 <tr>
+                    <th></th>
                     <th>#</th>
                     <th>任务ID</th>
                     <th>任务名称</th>
@@ -89,14 +90,14 @@
             contentType: "application/json;charset=UTF-8",
             data: JSON.stringify(getParams()),
             success: function (result) {
-                let trStr = "<tr><td><input name='jobId' type='checkbox' value='$(id)'/></td><td>$(id)</td><td>$(name)</td><td>$(project)</td><td>$(cron)</td><td>$(route)</td></tr>";
-                let trOddStr = "<tr class='pure-table-odd'><td><input name='jobId' type='checkbox' value='$(id)'/></td><td>$(id)</td><td>$(name)</td><td>$(project)</td><td>$(cron)</td><td>$(route)</td></tr>";
+                let trStr = "<tr><td><input name='jobId' type='checkbox' value='$(id)'/></td><td>#</td><td>$(id)</td><td>$(name)</td><td>$(project)</td><td>$(cron)</td><td>$(route)</td></tr>";
+                let trOddStr = "<tr class='pure-table-odd'><td><input name='jobId' type='checkbox' value='$(id)'/></td><td>#</td><td>$(id)</td><td>$(name)</td><td>$(project)</td><td>$(cron)</td><td>$(route)</td></tr>";
                 if (result.data && result.data.length > 0) {
                     $(result.data).each(function (index, element) {
                         if (index % 2 == 0) {
-                            $("tbody").append(trStr.replace(/\$\(id\)/g, element.id).replace("$(name)", element.job_desc).replace("$(project)", element.project_name).replace("$(cron)", element.job_cron).replace("$(route)", element.executor_route_strategy));
+                            $("tbody").append(trStr.replace("#", index + 1).replace(/\$\(id\)/g, element.id).replace("$(name)", element.job_desc).replace("$(project)", element.project_name).replace("$(cron)", element.job_cron).replace("$(route)", element.executor_route_strategy));
                         } else {
-                            $("tbody").append(trOddStr.replace(/\$\(id\)/g, element.id).replace("$(name)", element.job_desc).replace("$(project)", element.project_name).replace("$(cron)", element.job_cron).replace("$(route)", element.executor_route_strategy));
+                            $("tbody").append(trOddStr.replace("#", index + 1).replace(/\$\(id\)/g, element.id).replace("$(name)", element.job_desc).replace("$(project)", element.project_name).replace("$(cron)", element.job_cron).replace("$(route)", element.executor_route_strategy));
                         }
                     });
                 } else {
