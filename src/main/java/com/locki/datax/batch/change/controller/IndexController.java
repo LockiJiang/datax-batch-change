@@ -91,6 +91,29 @@ public class IndexController {
     }
 
     /**
+     * 清空所选任务的pre/post语句
+     *
+     * @param vo
+     * @return {@link String}
+     * @author jiangyang
+     * @date 2022/2/14
+     */
+    @PostMapping("/deleteSql")
+    public String deleteSql(@RequestBody @Valid JobsSearchVo vo) {
+        if (vo == null || vo.getType() == null
+                || !(vo.getType().trim().equals("post") || vo.getType().trim().equals("pre"))) {
+            return "请指定pre或者post！";
+        }
+
+        List<Map<String, String>> list = jobInfoService.getData(vo);
+        if (list == null || list.size() < 1) {
+            return "未找到有效的任务信息！";
+        }
+        jobInfoService.deleteSql(vo, list);
+        return "处理完成";
+    }
+
+    /**
      * 生成脚本文件
      *
      * @param vo
