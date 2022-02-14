@@ -13,6 +13,9 @@
             text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
             background: rgb(66, 184, 221);
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -33,11 +36,22 @@
             </fieldset>
         </form>
         <fieldset>
-            <legend>数据源修改</legend>
+            <legend>任务修改</legend>
             <p>
                 <button type="button" id="selectAll" class="pure-button button-secondary">全选/取消全选</button>
                 <button type="button" id="updateJobs" class="pure-button button-secondary">导出任务</button>
                 <button type="button" id="addTrunc" class="pure-button button-secondary">添加TRUNCATE</button>
+                <button type="button" id="addPre" class="pure-button button-secondary">添加PRESQL</button>
+                <button type="button" id="addPost" class="pure-button button-secondary">添加POSTSQL</button>
+            </p>
+            <p>
+                <div id="sqlDiv" class="hidden">
+                    <form class="pure-form">
+                        <input type="text" name="sqlType" hidden>
+                        <input type="text" name="sqlStr" class="pure-u-22-24" placeholder="需要添加的SQL" value="">
+                        <button type="button" id="addSqlBtn" class="pure-button pure-button-primary">确定</button>
+                    </form>
+                </div>
             </p>
             <table class="pure-table">
                 <thead>
@@ -149,6 +163,39 @@
             contentType: "application/json;charset=UTF-8",
             data: JSON.stringify(param),
             success: function (result) {
+                alert(result);
+            }
+        });
+    });
+
+    $("#addPre").click(function () {
+        $("#sqlDiv").attr("class", '');
+        $("input[name='sqlType']").val("pre");
+    });
+
+    $("#addPost").click(function () {
+        $("#sqlDiv").attr("class", '');
+        $("input[name='sqlType']").val("post");
+    });
+
+    $("#addSqlBtn").click(function () {
+        let ids = [];
+        $("input[name='jobId']:checked").each(function (index, element) {
+            ids.push($(element).val());
+        });
+        let param = getParams();
+        param.ids = ids;
+        param.type = $("input[name='sqlType']").val();
+        param.sql = $("input[name='sqlStr']").val();
+        $.ajax({
+            type: "post",
+            url: "./addSql",
+            contentType: "application/json;charset=UTF-8",
+            data: JSON.stringify(param),
+            success: function (result) {
+                $("input[name='sqlStr']").val("");
+                $("input[name='sqlType']").val("");
+                $("#sqlDiv").attr("class", 'hidden');
                 alert(result);
             }
         });

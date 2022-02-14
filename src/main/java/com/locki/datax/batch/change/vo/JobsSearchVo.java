@@ -28,4 +28,7 @@ public class JobsSearchVo {
     private String jobDesc;
     private String projectName;
     private List<Integer> ids;
+
+    private String type;
+    private String sql;
 }
