@@ -4,7 +4,6 @@ import com.locki.datax.batch.change.utils.Configuration;
 import com.locki.datax.batch.change.utils.ConnectionUtil;
 import com.locki.datax.batch.change.vo.JobsSearchVo;
 import com.locki.datax.batch.change.vo.Result;
-import com.sun.crypto.provider.PBEWithMD5AndTripleDESCipher;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,7 +34,6 @@ public class IndexController {
      */
     @PostMapping("/listJobs")
     public Result listJobs(@RequestBody @Valid JobsSearchVo vo) {
-        System.out.println(vo);
         String jobDesc = vo.getJobDesc();
         String projectName = vo.getProjectName();
         Connection con = null;
@@ -83,10 +81,57 @@ public class IndexController {
     }
 
     /**
+     * 为所选任务添加truncate语句
+     *
+     * @param vo
+     * @return {@link String}
+     * @author jiangyang
+     * @date 2022/2/14
+     */
+    @PostMapping("/addTrunc")
+    public String addTrunc(@RequestBody @Valid JobsSearchVo vo) {
+        List<Map<String, String>> list = getData(vo);
+        if (list == null || list.size() < 1) {
+            return "未找到有效的任务信息！";
+        }
+        for (Map<String, String> map : list) {
+            Configuration conf = Configuration.from(map.get("job_json"));
+            //获取表名
+            String tableName = conf.getString("job.content[0].writer.parameter.connection[0].table[0]");
+            //获取已有的pre
+            List<String> preSqls = conf.getList("job.content[0].writer.parameter.preSql", String.class);
+            if (preSqls == null) {
+                preSqls = new ArrayList<>();
+            }
+            boolean haveTrunc = false;
+            Iterator<String> it = preSqls.iterator();
+            while (it.hasNext()) {
+                String sql = it.next();
+                if (sql == null || sql.trim().length() < 1) {
+                    it.remove();
+                    continue;
+                }
+                if (sql.trim().toLowerCase().startsWith("truncate")) {
+                    haveTrunc = true;
+                    break;
+                }
+            }
+            if (!haveTrunc) {
+                preSqls.add(0, "TRUNCATE TABLE " + tableName);
+            }
+            //更新
+            conf.set("job.content[0].writer.parameter.preSql", preSqls);
+            map.put("job_json", conf.toString());
+        }
+        saveJobJson(vo, list);
+        return "处理完成";
+    }
+
+    /**
      * 生成脚本文件
      *
      * @param vo
-     * @param response
+     * @param {@link String}
      * @return
      * @author jiangyang
      * @date 2020/11/12
@@ -156,10 +201,44 @@ public class IndexController {
     }
 
     /**
+     * 保存json
+     *
+     * @param vo
+     * @param list
+     * @return
+     * @author jiangyang
+     * @date 2022/2/14
+     */
+    private void saveJobJson(JobsSearchVo vo, List<Map<String, String>> list) {
+        if (list == null || list.size() < 1) {
+            return;
+        }
+        Connection con = null;
+        PreparedStatement ps = null;
+        try {
+            con = ConnectionUtil.getCon(vo.getDbHost(), vo.getDbPort(), vo.getDbName(), vo.getDbUsername(), vo.getDbPassword());
+            String upt = "update job_info set job_json = ? where id = ?";
+            con.setAutoCommit(false);
+            ps = con.prepareStatement(upt);
+            for (Map<String, String> map : list) {
+                ps.setString(1, map.get("job_json"));
+                ps.setString(2, map.get("id"));
+                ps.addBatch();
+            }
+            ps.executeBatch();
+            con.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            ConnectionUtil.close(con, ps, null);
+        }
+    }
+
+    /**
      * 查询任务信息
      *
      * @param vo
-     * @return {@link List< Map< String, String>>}
+     * @return {@link List<Map<String, String>>}
      * @author jiangyang
      * @date 2020/11/12
      */

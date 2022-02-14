@@ -37,6 +37,7 @@
             <p>
                 <button type="button" id="selectAll" class="pure-button button-secondary">全选/取消全选</button>
                 <button type="button" id="updateJobs" class="pure-button button-secondary">导出任务</button>
+                <button type="button" id="addTrunc" class="pure-button button-secondary">添加TRUNCATE</button>
             </p>
             <table class="pure-table">
                 <thead>
@@ -81,7 +82,6 @@
     };
 
     $("#searchJobs").click(function () {
-
         $("tbody").empty();
         isChecked = false;
         $.ajax({
@@ -132,6 +132,24 @@
             data: JSON.stringify(param),
             success: function (result) {
                 download(result);
+            }
+        });
+    });
+
+    $("#addTrunc").click(function () {
+        let ids = [];
+        $("input[name='jobId']:checked").each(function (index, element) {
+            ids.push($(element).val());
+        });
+        let param = getParams();
+        param.ids = ids;
+        $.ajax({
+            type: "post",
+            url: "./addTrunc",
+            contentType: "application/json;charset=UTF-8",
+            data: JSON.stringify(param),
+            success: function (result) {
+                alert(result);
             }
         });
     });

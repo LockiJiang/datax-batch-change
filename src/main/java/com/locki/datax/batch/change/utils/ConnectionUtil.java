@@ -27,7 +27,7 @@ public class ConnectionUtil {
         Connection con = null;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            String dbUrl = "jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName + "?useUnicode=true&characterEncoding=utf8";
+            String dbUrl = "jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName + "?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true";
             con = (Connection) DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
         } catch (Exception e) {
             e.printStackTrace();
