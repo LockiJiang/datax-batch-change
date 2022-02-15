@@ -139,9 +139,32 @@ public class JobInfoService {
                 conf.set("job.content[0].writer.parameter.postSql", sqls);
             }
             map.put("job_json", conf.toString());
+        }
+        jobInfoDao.updateJobJson(vo, list);
+        return "处理完成";
+    }
+
+    /**
+     * 清空所选任务的pre/post语句
+     *
+     * @param vo
+     * @param list
+     * @return {@link String}
+     * @author jiangyang
+     * @date 2022/2/14
+     */
+    public String deleteSql(JobsSearchVo vo, List<Map<String, String>> list) {
+        for (Map<String, String> map : list) {
+            Configuration conf = Configuration.from(map.get("job_json"));
+            if ("pre".equals(vo.getType().trim())) {
+                conf.remove("job.content[0].writer.parameter.preSql");
+            } else {
+                conf.remove("job.content[0].writer.parameter.postSql");
+            }
+            map.put("job_json", conf.toString());
             System.out.println(conf);
         }
-        //jobInfoDao.updateJobJson(vo, list);
+        jobInfoDao.updateJobJson(vo, list);
         return "处理完成";
     }
 

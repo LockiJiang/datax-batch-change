@@ -43,6 +43,8 @@
                 <button type="button" id="addTrunc" class="pure-button button-secondary">添加TRUNCATE</button>
                 <button type="button" id="addPre" class="pure-button button-secondary">添加PRESQL</button>
                 <button type="button" id="addPost" class="pure-button button-secondary">添加POSTSQL</button>
+                <button type="button" id="purgePre" class="pure-button button-secondary">清空PRESQL</button>
+                <button type="button" id="purgePost" class="pure-button button-secondary">清空POSTSQL</button>
             </p>
             <p>
                 <div id="sqlDiv" class="hidden">
@@ -87,6 +89,14 @@
         param.dbPassword = $("input[name='dbPassword']").val();
         param.jobDesc = $("input[name='jobDesc']").val();
         param.projectName = $("input[name='projectName']").val();
+
+        let ids = [];
+        $("input[name='jobId']:checked").each(function (index, element) {
+            ids.push($(element).val());
+        });
+        param.ids = ids;
+        param.type = $("input[name='sqlType']").val();
+        param.sql = $("input[name='sqlStr']").val();
         return param;
     }
 
@@ -133,12 +143,7 @@
     });
 
     $("#updateJobs").click(function () {
-        let ids = [];
-        $("input[name='jobId']:checked").each(function (index, element) {
-            ids.push($(element).val());
-        });
         let param = getParams();
-        param.ids = ids;
         $.ajax({
             type: "post",
             url: "./exportSql",
@@ -151,12 +156,7 @@
     });
 
     $("#addTrunc").click(function () {
-        let ids = [];
-        $("input[name='jobId']:checked").each(function (index, element) {
-            ids.push($(element).val());
-        });
         let param = getParams();
-        param.ids = ids;
         $.ajax({
             type: "post",
             url: "./addTrunc",
@@ -178,15 +178,18 @@
         $("input[name='sqlType']").val("post");
     });
 
+    $("#purgePre").click(function () {
+        $("input[name='sqlType']").val("pre");
+        purgeSql();
+    });
+
+    $("#purgePost").click(function () {
+        $("input[name='sqlType']").val("post");
+        purgeSql();
+    });
+
     $("#addSqlBtn").click(function () {
-        let ids = [];
-        $("input[name='jobId']:checked").each(function (index, element) {
-            ids.push($(element).val());
-        });
         let param = getParams();
-        param.ids = ids;
-        param.type = $("input[name='sqlType']").val();
-        param.sql = $("input[name='sqlStr']").val();
         $.ajax({
             type: "post",
             url: "./addSql",
@@ -200,5 +203,18 @@
             }
         });
     });
+
+    function purgeSql(){
+        let param = getParams();
+        $.ajax({
+            type: "post",
+            url: "./deleteSql",
+            contentType: "application/json;charset=UTF-8",
+            data: JSON.stringify(param),
+            success: function (result) {
+                alert(result);
+            }
+        });
+    }
 </script>
 </html>
