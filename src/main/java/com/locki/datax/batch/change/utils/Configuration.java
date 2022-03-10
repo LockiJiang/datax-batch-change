@@ -572,16 +572,23 @@ public class Configuration {
     }
 
     /**
-     * 删除path对应的值，如果path不存在，将抛出异常。
+     * 删除path对应的值，如果path不存在，根据isThrowException决定是否抛出异常将抛出异常。
      */
-    public Object remove(final String path) {
+    public Object remove(final String path, boolean isThrowException) {
         final Object result = this.get(path);
-        if (null == result) {
+        if (isThrowException && null == result) {
             throw new RuntimeException(String.format("配置文件对应Key[%s]并不存在，该情况是代码编程错误. 请联系DataX团队的同学.", path));
         }
 
         this.set(path, null);
         return result;
+    }
+
+    /**
+     * 删除path对应的值，如果path不存在，将抛出异常。
+     */
+    public Object remove(final String path) {
+        return remove(path, true);
     }
 
     /**

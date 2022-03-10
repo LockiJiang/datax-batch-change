@@ -27,7 +27,7 @@ public class JobInfoService {
     /**
      * 获取datax任务
      *
-     * @param List<Map<String, String>>
+     * @param vo
      * @return {@link null}
      * @author jiangyang
      * @date 2022/2/14
@@ -157,9 +157,9 @@ public class JobInfoService {
         for (Map<String, String> map : list) {
             Configuration conf = Configuration.from(map.get("job_json"));
             if ("pre".equals(vo.getType().trim())) {
-                conf.remove("job.content[0].writer.parameter.preSql");
+                conf.remove("job.content[0].writer.parameter.preSql", false);
             } else {
-                conf.remove("job.content[0].writer.parameter.postSql");
+                conf.remove("job.content[0].writer.parameter.postSql", false);
             }
             map.put("job_json", conf.toString());
             System.out.println(conf);
